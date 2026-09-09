@@ -1,7 +1,13 @@
+import Navbar from './components/Navbar';
+import Catalog from './components/Catalog';
+
 function App() {
-    return (
-        <main>
-        </main>
-    );
+  return (
+    <>
+      <Navbar />
+      <Catalog />
+    </>
+  );
 }
+
 export default App;
