@@ -2,6 +2,7 @@ import type { Movie } from '../types/movie';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
+const TMDB_MAX_PAGE = 500;
 
 const languageNames = new Intl.DisplayNames(['fr'], { type: 'language' });
 const regionNames = new Intl.DisplayNames(['fr'], { type: 'region' });
@@ -92,8 +93,6 @@ function getGenreMap(): Promise<Map<number, string>> {
 
 let imageConfigPromise: Promise<ImageConfig> | null = null;
 
-// Construit les URLs d'images à partir de /configuration, comme le prévoit l'API TMDB,
-// plutôt que de coder en dur le domaine et la taille d'image.
 function getImageConfig(): Promise<ImageConfig> {
   if (!imageConfigPromise) {
     imageConfigPromise = tmdbFetch<TmdbConfiguration>('/configuration').then((data) => {
@@ -160,14 +159,26 @@ function mapMovieDetail(raw: TmdbMovieDetail, imageConfig: ImageConfig): Movie {
   };
 }
 
-export async function fetchPopularMovies(): Promise<Movie[]> {
+export interface PaginatedMovies {
+  movies: Movie[];
+  page: number;
+  totalPages: number;
+}
+
+export async function fetchPopularMovies(page = 1): Promise<PaginatedMovies> {
   const [genreMap, imageConfig, data] = await Promise.all([
     getGenreMap(),
     getImageConfig(),
-    tmdbFetch<{ results: TmdbMovieSummary[] }>('/movie/popular?language=fr-FR&page=1'),
+    tmdbFetch<{ results: TmdbMovieSummary[]; page: number; total_pages: number }>(
+      `/movie/popular?language=fr-FR&page=${page}`,
+    ),
   ]);
 
-  return data.results.map((movie) => mapMovieSummary(movie, genreMap, imageConfig));
+  return {
+    movies: data.results.map((movie) => mapMovieSummary(movie, genreMap, imageConfig)),
+    page: data.page,
+    totalPages: Math.min(data.total_pages, TMDB_MAX_PAGE),
+  };
 }
 
 export async function searchMovies(query: string): Promise<Movie[]> {

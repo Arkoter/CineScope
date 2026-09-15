@@ -25,7 +25,7 @@ export function MoviesProvider({ children }: { children: ReactNode }) {
       setError(false);
       try {
         const data = await fetchPopularMovies();
-        if (!cancelled) setMovies(data);
+        if (!cancelled) setMovies(data.movies);
       } catch {
         if (!cancelled) setError(true);
       } finally {

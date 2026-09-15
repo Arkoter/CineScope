@@ -1,10 +1,49 @@
+import type { Movie } from '../types/movie';
+import { useMovies } from '../context/MoviesContext';
+import { useLibrary, type LibraryStatus } from '../context/LibraryContext';
+import MovieGrid from '../components/MovieGrid';
+import MoviesErrorState from '../components/MoviesErrorState';
 import PageContainer from '../components/PageContainer';
 
+const categories: { status: LibraryStatus; title: string }[] = [
+  { status: 'to_watch', title: 'À regarder' },
+  { status: 'watching', title: 'En cours' },
+  { status: 'watched', title: 'Vu' },
+];
+
+function LibrarySection({ title, movies }: { title: string; movies: Movie[] }) {
+  return (
+    <section className="mt-8">
+      <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
+      {movies.length > 0 ? (
+        <MovieGrid movies={movies} />
+      ) : (
+        <p className="text-slate-400">Aucun film dans cette liste.</p>
+      )}
+    </section>
+  );
+}
+
 function LibraryPage() {
+  const { movies, loading, error, refetch } = useMovies();
+  const { library } = useLibrary();
+
   return (
     <PageContainer>
-      <h1 className="text-3xl font-bold text-white">Bibliothèque</h1>
-      <p className="mt-2 text-slate-400">Cette section arrivera prochainement.</p>
+      <h1 className="text-3xl font-bold text-white">Ma bibliothèque</h1>
+
+      {loading && <p className="mt-6 text-slate-400">Chargement des films...</p>}
+      {error && <MoviesErrorState onRetry={refetch} />}
+
+      {!loading &&
+        !error &&
+        categories.map(({ status, title }) => (
+          <LibrarySection
+            key={status}
+            title={title}
+            movies={movies.filter((movie) => library[movie.id] === status)}
+          />
+        ))}
     </PageContainer>
   );
 }

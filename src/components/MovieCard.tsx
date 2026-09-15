@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Movie } from '../types/movie';
 import { useFavorites } from '../context/FavoritesContext';
+import { useLibrary, type LibraryStatus } from '../context/LibraryContext';
 import PosterPlaceholder from './PosterPlaceholder';
 
 interface MovieCardProps {
@@ -9,7 +10,17 @@ interface MovieCardProps {
 
 function MovieCard({ movie }: MovieCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { getStatus, setStatus, removeFromLibrary } = useLibrary();
   const favorite = isFavorite(movie.id);
+  const status = getStatus(movie.id);
+
+  const handleStatusChange = (value: string) => {
+    if (value === '') {
+      removeFromLibrary(movie.id);
+    } else {
+      setStatus(movie.id, value as LibraryStatus);
+    }
+  };
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:border-slate-700">
@@ -66,6 +77,17 @@ function MovieCard({ movie }: MovieCardProps) {
           >
             Voir le film
           </Link>
+          <select
+            value={status ?? ''}
+            onChange={(event) => handleStatusChange(event.target.value)}
+            aria-label="Statut dans ma bibliothèque"
+            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-slate-500"
+          >
+            <option value="">Ajouter à ma bibliothèque</option>
+            <option value="to_watch">À regarder</option>
+            <option value="watching">En cours</option>
+            <option value="watched">Vu</option>
+          </select>
         </div>
       </div>
     </article>
