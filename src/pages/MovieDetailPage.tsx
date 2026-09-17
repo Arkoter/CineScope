@@ -1,49 +1,14 @@
-import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import type { Movie } from '../types/movie';
-import { fetchMovieById, TmdbNotFoundError } from '../services/tmdb';
 import { useFavorites } from '../context/FavoritesContext';
+import { useMovieDetails } from '../hooks/useMovieDetails';
 import PageContainer from '../components/PageContainer';
 import PosterPlaceholder from '../components/PosterPlaceholder';
-
-type Status = 'loading' | 'success' | 'not-found' | 'error';
 
 function MovieDetailPage() {
   const { id } = useParams();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [movie, setMovie] = useState<Movie | null>(null);
-  const [status, setStatus] = useState<Status>('loading');
-
-  useEffect(() => {
-    let cancelled = false;
-    const numericId = Number(id);
-
-    async function load() {
-      setStatus('loading');
-
-      if (!id || Number.isNaN(numericId)) {
-        if (!cancelled) setStatus('not-found');
-        return;
-      }
-
-      try {
-        const data = await fetchMovieById(numericId);
-        if (!cancelled) {
-          setMovie(data);
-          setStatus('success');
-        }
-      } catch (err) {
-        if (cancelled) return;
-        setStatus(err instanceof TmdbNotFoundError ? 'not-found' : 'error');
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
+  const numericId = id ? Number(id) : undefined;
+  const { movie, status } = useMovieDetails(numericId);
 
   if (status === 'loading') {
     return (
@@ -139,7 +104,7 @@ function MovieDetailPage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => toggleFavorite(movie.id)}
+              onClick={() => toggleFavorite(movie)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
                 favorite
                   ? 'bg-slate-800 text-slate-200 hover:bg-slate-700'

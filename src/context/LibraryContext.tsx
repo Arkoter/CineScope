@@ -1,23 +1,29 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import type { Movie } from '../types/movie';
 
 export type LibraryStatus = 'to_watch' | 'watching' | 'watched';
 
+interface LibraryEntry {
+  movie: Movie;
+  status: LibraryStatus;
+}
+
 interface LibraryContextValue {
-  library: Record<number, LibraryStatus>;
+  library: Record<number, LibraryEntry>;
   getStatus: (id: number) => LibraryStatus | undefined;
-  setStatus: (id: number, status: LibraryStatus) => void;
+  setStatus: (movie: Movie, status: LibraryStatus) => void;
   removeFromLibrary: (id: number) => void;
 }
 
 const LibraryContext = createContext<LibraryContextValue | undefined>(undefined);
 
 export function LibraryProvider({ children }: { children: ReactNode }) {
-  const [library, setLibrary] = useState<Record<number, LibraryStatus>>({});
+  const [library, setLibrary] = useState<Record<number, LibraryEntry>>({});
 
-  const getStatus = (id: number) => library[id];
+  const getStatus = (id: number) => library[id]?.status;
 
-  const setStatus = (id: number, status: LibraryStatus) => {
-    setLibrary((current) => ({ ...current, [id]: status }));
+  const setStatus = (movie: Movie, status: LibraryStatus) => {
+    setLibrary((current) => ({ ...current, [movie.id]: { movie, status } }));
   };
 
   const removeFromLibrary = (id: number) => {

@@ -18,7 +18,7 @@ function MovieCard({ movie }: MovieCardProps) {
     if (value === '') {
       removeFromLibrary(movie.id);
     } else {
-      setStatus(movie.id, value as LibraryStatus);
+      setStatus(movie, value as LibraryStatus);
     }
   };
 
@@ -39,7 +39,7 @@ function MovieCard({ movie }: MovieCardProps) {
         </span>
         <button
           type="button"
-          onClick={() => toggleFavorite(movie.id)}
+          onClick={() => toggleFavorite(movie)}
           aria-label={favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
           className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-sm shadow transition-colors ${
             favorite
@@ -62,7 +62,7 @@ function MovieCard({ movie }: MovieCardProps) {
         <div className="mt-auto flex flex-col gap-2">
           <button
             type="button"
-            onClick={() => toggleFavorite(movie.id)}
+            onClick={() => toggleFavorite(movie)}
             className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
               favorite
                 ? 'bg-slate-800 text-slate-200 hover:bg-slate-700'

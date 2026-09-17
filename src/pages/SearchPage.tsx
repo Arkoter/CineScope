@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react';
-import type { Movie } from '../types/movie';
-import { searchMovies } from '../services/tmdb';
+import { useState } from 'react';
+import { useMovieSearch } from '../hooks/useMovieSearch';
 import MovieGrid from '../components/MovieGrid';
 import PageContainer from '../components/PageContainer';
 
 function SearchPage() {
   const [input, setInput] = useState('');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const { results, loading, error, hasSearched } = useMovieSearch(query);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -18,36 +14,6 @@ function SearchPage() {
     if (trimmed === '') return;
     setQuery(trimmed);
   };
-
-  // Effet déclenché après le rendu, à chaque changement de la recherche validée.
-  useEffect(() => {
-    if (query === '') return;
-
-    let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      setError(false);
-      try {
-        const data = await searchMovies(query);
-        if (!cancelled) {
-          setResults(data);
-          setHasSearched(true);
-          console.log(`[recherche] "${query}" -> ${data.length} résultat(s)`);
-        }
-      } catch {
-        if (!cancelled) setError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [query]);
 
   return (
     <PageContainer>

@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { Movie } from '../types/movie';
-import { fetchPopularMovies } from '../services/tmdb';
+import { useState } from 'react';
+import { useMoviesList } from '../hooks/useMoviesList';
 import MovieGrid from '../components/MovieGrid';
 import MoviesErrorState from '../components/MoviesErrorState';
 import PaginationControls from '../components/PaginationControls';
@@ -8,39 +7,8 @@ import PageContainer from '../components/PageContainer';
 
 function MoviesPage() {
   const [page, setPage] = useState(1);
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [reloadIndex, setReloadIndex] = useState(0);
+  const { movies, totalPages, loading, error, refetch } = useMoviesList(page);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      setError(false);
-      try {
-        const data = await fetchPopularMovies(page);
-        if (!cancelled) {
-          setMovies(data.movies);
-          setTotalPages(Math.max(data.totalPages, 1));
-        }
-      } catch {
-        if (!cancelled) setError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [page, reloadIndex]);
-
-  const refetch = () => setReloadIndex((index) => index + 1);
   const goToPreviousPage = () => setPage((current) => Math.max(1, current - 1));
   const goToNextPage = () => setPage((current) => Math.min(totalPages, current + 1));
 

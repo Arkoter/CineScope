@@ -1,8 +1,6 @@
 import type { Movie } from '../types/movie';
-import { useMovies } from '../context/MoviesContext';
 import { useLibrary, type LibraryStatus } from '../context/LibraryContext';
 import MovieGrid from '../components/MovieGrid';
-import MoviesErrorState from '../components/MoviesErrorState';
 import PageContainer from '../components/PageContainer';
 
 const categories: { status: LibraryStatus; title: string }[] = [
@@ -25,25 +23,20 @@ function LibrarySection({ title, movies }: { title: string; movies: Movie[] }) {
 }
 
 function LibraryPage() {
-  const { movies, loading, error, refetch } = useMovies();
   const { library } = useLibrary();
+  const entries = Object.values(library);
 
   return (
     <PageContainer>
       <h1 className="text-3xl font-bold text-white">Ma bibliothèque</h1>
 
-      {loading && <p className="mt-6 text-slate-400">Chargement des films...</p>}
-      {error && <MoviesErrorState onRetry={refetch} />}
-
-      {!loading &&
-        !error &&
-        categories.map(({ status, title }) => (
-          <LibrarySection
-            key={status}
-            title={title}
-            movies={movies.filter((movie) => library[movie.id] === status)}
-          />
-        ))}
+      {categories.map(({ status, title }) => (
+        <LibrarySection
+          key={status}
+          title={title}
+          movies={entries.filter((entry) => entry.status === status).map((entry) => entry.movie)}
+        />
+      ))}
     </PageContainer>
   );
 }
